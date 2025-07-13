@@ -1,6 +1,6 @@
 * {
-margin: 0;
-padding: 0;
+margin: 10;
+padding: 10;
 box-sizing: border-box;
 }
 
@@ -73,7 +73,27 @@ content: "⋯";
 font-size: 18px;
 font-weight: bold;
 }
+.no-arrow {
+appearance: none;            /* Cho Chrome, Safari, Edge */
+-webkit-appearance: none;    /* Safari */
+-moz-appearance: none;       /* Firefox */
+background-color: #f3e8ff;   /* Màu nền tuỳ chỉnh */
+color: #6f42c1;             
+border-radius: 999px;
+padding: 4px 12px;
+font-size: 14px;
+font-weight: 500;
 
+}
+
+/* Tùy chọn: ẩn dấu mũi tên cho Firefox */
+select.no-arrow{
+    appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+display: none; /* cho IE */
+outline: none;
+}
 .notification-btn::before {
 content: "🔔";
 font-size: 16px;
@@ -242,7 +262,10 @@ width: 100%;
 border-collapse: collapse;
 background: white;
 }
-
+.expand-icon {
+    margin: 10px;
+    cursor: pointer;
+}
 thead {
 background: #f8f9fa;
 }
@@ -495,4 +518,139 @@ background: #f8f9fa;
 background: #007bff;
 color: white;
 border-color: #007bff;
+}
+form {
+    background:white;
+  max-width: 800px;
+  margin: auto ;
+  font-family: sans-serif;
+  
+
+}
+
+.form-title {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 24px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.form-row {
+  display: flex;
+
+}
+
+.form-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  margin: -10;
+}
+
+label {
+    position: absolute;
+    top: 0%;
+    left:15px;
+    font-size: 12px;
+    background:white;
+    padding:0 10px;
+}
+
+
+input,
+select {
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    
+}
+
+.btn-primary {
+    background: #4CAF50;
+    color: white;
+    text-align: right;
+}
+
+.btn-primary:hover {
+    background: #45a049;
+}
+
+.btn-secondary {
+    background: #f1f1f1;
+    color: #333;
+    text-align: right;
+}
+
+.btn-secondary:hover {
+    background: #e0e0e0;
+}
+.form-actions {
+    padding: 20px 24px;
+    background: #f8f9fa;
+    border-top: 1px solid #e0e0e0;
+    max-width: 1000px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+.btn-add {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: background 0.3s ease;
+        }
+        
+        .btn-add:hover {
+            background: #45a049;
+        }
+.assigntable {
+  width: 740px;
+  margin: 30;             /* bỏ căn giữa */
+  padding: 10;
+  table-layout: fixed;
+  
+}
+.assigntable th,
+.assigntable td {
+  border: 1px solid #ddd;
+  padding:10px 0;
+  padding-right: 20px;
+  text-align: center;
+  font-size: 14px;
+  width: 15%;
+  margin:0;
+}
+
+.assigntable input,
+.assigntable select {
+  width: 100%;
+  padding: -10px;
+  box-sizing: border-box;
+  font-size: 13px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  margin: 10px;
 }

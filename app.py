@@ -18,6 +18,6 @@ def select_locale():
 # Khởi tạo Babel (cho Flask-Babel >= 3.x)
 babel = Babel()
 babel.init_app(app, locale_selector=select_locale)
-
+    
 if __name__ == '__main__':
     app.run(debug=True)
