@@ -1,5 +1,17 @@
-{% include "base/header.html" %}
-{% include "base/tabs_navigation.html" %}
-{{ result | safe}}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{headTitle | safe}}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='base/base1.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+</head>
+<body>
+    {{ result | safe}}
 <script src="{{ url_for('static', filename='base/scripts.js') }}"></script>
-<link rel="stylesheet" href="{{ url_for('static', filename='base/base.css') }}">
+
+</body>
+</html>
+

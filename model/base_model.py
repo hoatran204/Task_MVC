@@ -6,195 +6,10 @@ from googleapiclient.discovery import build
 from mysql.connector import Error
 from datetime import datetime, date
 from flask import url_for
+import copy
 
 
 class BaseModel:
-    @staticmethod
-    def render_column(columns, column_styles=None, class_table = None):
-        # Bắt đầu table
-
-        html = f"<table id='{class_table}' class='{class_table}'>\n"
-        html += "<thead>"
-
-        # Header
-        html += "  <tr>\n"
-        for i, col in enumerate(columns):
-            if column_styles and i < len(column_styles) and column_styles[i] == "hidden":
-                html += f"<th style='display:none'>{col}</th>"
-            else:
-                html += f"    <th>{col}</th>\n"
-
-        html += "  </tr>\n"
-        html += "</thead>\n"
-        return html
-    @staticmethod
-    def render_data(data, column_styles=None):
-        html = ""
-        for row in data:
-            html += f"  <tr"
-            if str(row[0]).startswith("sub"):
-                html += f" style='display:none'"
-            html += f" id={row[0]}>"
-            
-            for i, cell in enumerate(row):
-                
-                if column_styles and i < len(column_styles):
-                    id = row[0]
-                    html += f" {BaseModel.style(column_styles[i],i, cell,column_styles,row)}"
-                else:
-                    html += f"<td>{cell}</td>"
-            html += "  </tr>\n"
-        
-        return html
-    @staticmethod
-    def render_table(columns, data, column_styles=None, class_table=None):
-        html = BaseModel.render_column(columns, column_styles, class_table)
-        html += "<tbody>"
-        html += BaseModel.render_data(data, column_styles)
-        html += "</tbody>\n"
-        html += "</table>\n"
-        return html
-    @staticmethod
-    def nav(data):
-        html = "<div class='tabs-list'>"
-
-        for i, row in enumerate(data):
-            html += "<div class='tab-item'>"
-            for j, cell in enumerate(row):
-                if i < 1:
-                    # kiểu A
-                    if j == 0:
-                        html += f"<strong>{cell}</strong>"
-                    else:
-                        html += f" ({cell})"
-                else:
-                    # kiểu B
-                    html += f"<div class='dropdown-container'>"
-                    html += f"<button class='dropdown-btn'>Khác<span class='dropdown-arrow'></span>"
-                    html += f" </button></div>"
-                    break
-            html += "</div>"
-        html += "</div>"
-        return html
-    @staticmethod
-    def render_form(data):
-        html = ""
-        for row in data:
-            result = BaseModel.render(row)
-            if result:
-                html += result
-        return html
-    @staticmethod
-    def render(row):
-        html = ""
-        if len(row) == 1:
-            for cell in row:
-
-                html = f"""
-                
-                <div class="form-group" style="width:{cell[1]}">
-                {BaseModel.render_input(cell)}
-                </div> """
-        else:
-            html = f"<div class='form-row'>"
-            for cell in row:
-                html += f"""
-                
-                <div class="form-item" >
-                {BaseModel.render_input(cell)}
-                </div>"""
-            html +="</div>"
-            
-        return html
-    @staticmethod 
-    def render_input(ar):
-        require = ["",""]
-        if len(ar) > 5:
-            if ar[5] == "require":
-                require = ["*", "required"]
-        if ar[0] == "select":
-            options_html = ""
-            for cell in ar[6]:  # Bỏ 2 phần đầu
-                options_html += f"""<option value="{cell[0]}">{cell[1]}</option>"""
-            
-            return f"""
-                <label class='label_form'>{ar[2]}
-                {require[0]}
-                </label>
-                <select class='select_form' name="{ar[3]}" {require[1]}>
-                    <option value="">-- {ar[4]} --</option>
-                    {options_html}
-                </select>"""
-        if ar[0] == "text":
-            return f"""
-                <label class='label_form' >{ar[2]} {require[0]}</label>
-                <input  type='text' name='{ar[3]}' {require[1]}>
-            """
-        if ar[0] == "date":
-            return f"""
-                <label class='label_form'>{ar[2]}{require[0]}</label>
-                <input  type='date' name='{ar[3]}' {require[1]}>
-            """
-        if ar[0] == "number":
-            return f"""
-                <label class='label_form'>{ar[2]}{require[0]}</label>
-                <input  type='number' name='{ar[3]}' {require[1]}>
-            """
-            
-    @staticmethod
-    def isMain(i,row):
-        html = ""
-        if i == 1 and str(row[0]).startswith("main"):
-            html = f"<span class='expand-icon' id ='open{row[0]}'>▶</span>"
-        return html
-    @staticmethod
-    def style(style,i, cell, columns_styles, row):
-        if style == "user":
-            return f"""<td style='display:flex;align-items: center;' >
-            {BaseModel.isMain(i,row)}
-            <img style='border-radius:50%; height:40px;margin-right:10px;' src={cell[0]}> {cell[1]}</td>"""
-        elif style == "percent":
-            html = f"""<td>{BaseModel.isMain(i,row)}<div style='font-weight:bold; margin-bottom: 4px;'>{cell}%</div>
-                            <div style='width: 100%; background-color: #eee; border-radius: 4px; overflow: hidden;'>
-                            <div style='width: {cell}%; background-color: #28a745; height: 10px;'></div>
-                            </div></td>
-                            """
-            return html
-        elif style == "choose":
-            html = f"""
-            <td>
-                <select class="no-arrow" name="status" onchange="updateStatus(this)" data-id="{row[0]}" style='
-                background-color: {cell[0][2]};
-                color: {cell[0][3]};
-                border: 1px solid {cell[0][3]};
-                padding: 4px 12px;
-                border-radius: 999px;
-                font-size: 14px;
-                font-weight: 500;
-                display: inline-block;
-                '>
-                <option value="{cell[0][0]}" selected hidden>{cell[0][1]}</option>
-            """
-
-            for option in cell[1]:  # các lựa chọn còn lại
-                html += f"""<option style='background-color: {option[2]};
-                color: {option[3]};
-                border: 1px solid {option[3]};' value='{option[0]}'>{option[1]}</option>"""
-
-            html += """
-                </select>
-            </form>
-            </td>
-            """
-            return html
-        elif style == "hidden":
-            return f"<td style='display:none'>{BaseModel.isMain(i,row)}{cell}</td>"
-        elif style == "subs":
-            html = BaseModel.render_data(cell,columns_styles)
-            
-            return html
-        else:
-            return f"<td>{BaseModel.isMain(i,row)}{cell}</td>"
     @staticmethod
     def Select(columns, table):
         conn = None  
@@ -265,7 +80,6 @@ class BaseModel:
             cursor = conn.cursor()
 
             query = f"INSERT INTO {table} values ({condition})"
-            print(query)
             cursor.execute(query)
             conn.commit()
             return True
@@ -279,6 +93,48 @@ class BaseModel:
                 cursor.close()
                 conn.close()
     @staticmethod
+    def sort_ar(ar, i):
+        
+        # Kiểm tra điều kiện đầu vào
+        if not isinstance(ar, dict):
+            raise TypeError("Input 'ar' must be a dictionary")
+        if "data" not in ar:
+            raise KeyError("Dictionary 'ar' must contain 'data' key")
+        if not isinstance(ar["data"], list):
+            raise TypeError("'ar[\"data\"]' must be a list")
+        
+        # Tạo bản sao sâu
+        new_ar = copy.deepcopy(ar)
+        data = new_ar["data"]
+        
+        # Kiểm tra độ dài và cấu trúc của từng phần tử
+        for item in data:
+            if not isinstance(item, list) or len(item) <= i:
+                raise ValueError("Each item in 'ar[\"data\"]' must be a list with at least {} elements".format(i + 1))
+        
+        # Xác định logic sắp xếp
+        def get_sort_key(x):
+            value = x[i]
+            if isinstance(value, str):
+                return (value == "", value.lower() if value else "")
+            elif isinstance(value, list):
+                if value[0] is None and len(value) > 1:
+                    # Lấy trạng thái đầu tiên trong danh sách lồng nhau
+                    states = value[1]
+                    if states and isinstance(states, list):
+                        return (True, states[0][1].lower() if states[0][1] else "")
+                else:
+                    # Lấy trạng thái đầu tiên nếu có
+                    return (False, value[0][1].lower() if value and value[0] and value[0][1] else "")
+            return (True, "")  # Giá trị mặc định nếu không khớp
+
+        # Sắp xếp dữ liệu
+        sorted_data = sorted(data, key=get_sort_key)
+        
+        # Cập nhật dữ liệu đã sắp xếp
+        new_ar["data"] = sorted_data
+        return new_ar
+    @staticmethod
     def choose(a, ar1):
         ar2 = None
         ar3 = []
@@ -289,10 +145,64 @@ class BaseModel:
                 ar3.append(ar)
         return ar2, ar3
     @staticmethod
-    def button(data):
-        html = f"""<div class="form-actions" style='background:white'>"""
+    def extract_sort_manual(url, split_value):
+        if '?' not in url:
+            return None
+        query_str = url.split('?', 1)[1]
+        print(f"[DEBUG] query_str: {query_str}")
+        pairs = query_str.split('&')
+        for pair in pairs:
+            if '=' in pair:
+                key, value = pair.split('=', 1)
+                print(f"[DEBUG] key: {key}, value: {value}")
+                if key.strip() == split_value.strip():
+                    print(f"[FOUND] {split_value} = {value}")
+                    return value
+        return None
+    @staticmethod
+    def replace(url, split_value):
+        index = BaseModel.extract_sort_manual(url, split_value)
+        content= f"&{split_value}={index}"
+        new_url = url.replace(content, "")
+        return new_url
+    def main_leftbar_ar():
+        ar = [
+            ["Thống kê", "statistic", "fas fa-chart-bar"],
+            ["Tài sản", "assignments", "fas fa-briefcase"],
+            ["Nhân viên", "employees", "fas fa-users"],
+            ["Kiểm kê", "inventory", "fas fa-clipboard-list"],
+            ["Cài đặt", "main", "fas fa-cog", [
+                ["Thông tin công ty", "company_information"],
+                ["Cơ cấu tổ chức", "organizational_structure"],
+                ["Loại tài sản", "asignment_type"],
+                ["Nhà cung cấp","supplier"]
+            ]]
+        ]
+        return ar
+    def count(data, table, column):
+        new_data = []
         for row in data:
-            html += f"""<button type="{row[0]}" class="{row[1]}" onclick="{row[2]}">{row[3]}</button>"""
-        html += f"""</div>"""
-        return html
+            if row[0] == "all":
+                result = BaseModel.Select("count(*)", table)
+            else:
+                value = f"'{row[0]}'" if isinstance(row[0], str) else row[0]
+                result = BaseModel.Select("count(*)", f"{table} WHERE {column} = {value}")
+            
+            # Lấy giá trị số thay vì dict
+            count_number = result[0]['count(*)'] if result else 0
+
+            new_data.append([
+                row[0],   # Giá trị điều kiện
+                row[1],   # Nhãn
+                count_number  # Số lượng
+            ])
+
+        print(new_data)
+        return new_data
+
+
+
+    
+    
+
     

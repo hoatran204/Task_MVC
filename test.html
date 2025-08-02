@@ -1,85 +1,179 @@
-<form action = "/add_asset" method=post><div style='width:800px; margin:-10px; background:white; padding: 0'><h3>Cấp phát tài sản</h3>
-                
-                <div class="form-group" style="width:45%">
-                
-                <label class='label_form'>Nhân viên sử dụng
-                *
-                </label>
-                <select class='select_form' name="employee" required>
-                    <option value="">-- Chọn nhân viên --</option>
-                    <option value="1">Nguyen Van An</option><option value="2">Tran Thi Binh</option><option value="3">Le Van Cuong</option><option value="4">Pham Thi Dung</option><option value="5">Hoang Van Em</option><option value="6">Vu Thi Phuong</option><option value="7">Do Van Hai</option><option value="8">Bui Thi Lan</option><option value="9">Trinh Van Minh</option><option value="10">Ngo Thi Hoa</option>
-                </select>
-                </div> <div class='form-row'>
-                
-                <div class="form-item" >
-                
-                <label class='label_form' >Người cấp phát *</label>
-                <input  type='text' name='dispenser' required>
-            
-                </div>
-                
-                <div class="form-item" >
-                
-                <label class='label_form'>Ngày cấp phát*</label>
-                <input  type='date' name='date' required>
-            
-                </div></div>
-                
-                <div class="form-group" style="width:98%">
-                
-                <label class='label_form' >Lý do </label>
-                <input  type='text' name='reason' >
-            
-                </div> 
-                
-                <div class="form-group" style="width:98%">
-                
-                <label class='label_form' >Địa điểm bàn giao </label>
-                <input  type='text' name='place' >
-            
-                </div> <h5 style='margin: 10 20px'>Tài sản được cấp phát (0)</h5><button style='margin:0 30px' type='button' id="addRowBtn" class="btn-add">➕ Thêm mới</button><table id='assigntable' class='assigntable'>
-<thead>  <tr>
-    <th>Mã tài sản</th>
-    <th>Tên tài sản</th>
-    <th>Vị trí tài sản</th>
-    <th>Trạng thái</th>
-    <th>SL cấp phát</th>
-  </tr>
-</thead>
-<tbody></tbody>
-</table>
-<div class="form-actions" style='background:white'><button type="button" class="btn btn-secondary" onclick="reloadPage() ">Hủy</button><button type="submit" class="btn btn-primary" onclick="submitForm()">Cấp phát</button></div></div></form><script>
-            document.getElementById("addRowBtn").addEventListener("click", function (event) {
-            event.preventDefault(); // Prevents form submission
-            const tableBody = document.getElementById("assigntable").querySelector("tbody");
-                if (!tableBody) {
-                console.error("Table or tbody not found!");
-                return;
-            }
-            const newRow = document.createElement("tr");
-            newRow.innerHTML = `
-                <td class='form-td'> 
-                <label class='label_form' > *</label>
-                <input  type='text' name='asset_id' required>
-            </td><td class='form-td'> 
-                <label class='label_form' > *</label>
-                <input  type='text' name='asset_name' required>
-            </td><td class='form-td'> 
-                <label class='label_form' > </label>
-                <input  type='text' name='asset_place' >
-            </td><td class='form-td'> 
-                <label class='label_form'>
-                
-                </label>
-                <select class='select_form' name="asset_status" >
-                    <option value="">-- Chọn trạng thái --</option>
-                    <option value="Under Maintenance">Đang bảo dưỡng</option>
-                </select></td><td class='form-td'> 
-                <label class='label_form'></label>
-                <input  type='number' name='asset_number' >
-            </td>
-            `;
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Group By Interface</title>
+    <style>
+        .content-table-groupby-container {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 300px;
+            margin: 20px;
+            background: #fff;
+        }
 
-            tableBody.appendChild(newRow);
-            });
-            </script>
+        .content-table-groupby-header {
+            position: relative;
+            margin-bottom: 12px;
+        }
+
+        .content-table-groupby-select {
+            width: 100%;
+            padding: 8px 32px 8px 12px;
+            border: 2px solid #4A90E2;
+            border-radius: 4px;
+            background: #fff;
+            font-size: 14px;
+            color: #4A90E2;
+            cursor: pointer;
+            appearance: none;
+            outline: none;
+            font-weight: 500;
+        }
+
+        .content-table-groupby-select:focus {
+            border-color: #357ABD;
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.2);
+        }
+
+        .content-table-groupby-arrow {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 6px solid #4A90E2;
+            pointer-events: none;
+        }
+
+        .content-table-groupby-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .content-table-groupby-row:last-child {
+            border-bottom: none;
+        }
+
+        .content-table-groupby-label {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+            min-width: 70px;
+        }
+
+        .content-table-groupby-field {
+            flex: 1;
+            position: relative;
+        }
+
+        .content-table-groupby-field-select {
+            width: 100%;
+            padding: 6px 28px 6px 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background: #fff;
+            font-size: 13px;
+            color: #666;
+            cursor: pointer;
+            appearance: none;
+            outline: none;
+        }
+
+        .content-table-groupby-field-select:focus {
+            border-color: #4A90E2;
+            box-shadow: 0 0 0 2px rgba(74, 144, 226, 0.1);
+        }
+
+        .content-table-groupby-field-arrow {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 5px solid #999;
+            pointer-events: none;
+        }
+
+        .content-table-groupby-delete {
+            width: 24px;
+            height: 24px;
+            background: #fff;
+            border: 1px solid #ff6b6b;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ff6b6b;
+            font-size: 16px;
+            line-height: 1;
+            transition: all 0.2s ease;
+        }
+
+        .content-table-groupby-delete:hover {
+            background: #ff6b6b;
+            color: #fff;
+        }
+
+        .content-table-groupby-delete::before {
+            content: "🗑";
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="content-table-groupby-container">
+        <!-- Header dropdown -->
+        <div class="content-table-groupby-header">
+            <select class="content-table-groupby-select">
+                <option value="">Nhóm theo: Loại tài sản</option>
+                <option value="type">Loại tài sản</option>
+                <option value="status">Trạng thái</option>
+                <option value="location">Vị trí</option>
+            </select>
+            <div class="content-table-groupby-arrow"></div>
+        </div>
+
+        <!-- Group by rows -->
+        <div class="content-table-groupby-row">
+            <div class="content-table-groupby-label">Nhóm theo</div>
+            <div class="content-table-groupby-field">
+                <select class="content-table-groupby-field-select">
+                    <option value="">Loại tài sản</option>
+                    <option value="type">Loại tài sản</option>
+                    <option value="status">Trạng thái</option>
+                    <option value="location">Vị trí</option>
+                </select>
+                <div class="content-table-groupby-field-arrow"></div>
+            </div>
+            <button class="content-table-groupby-delete" onclick="deleteRow(this)"></button>
+        </div>
+    </div>
+
+    <script>
+        function deleteRow(button) {
+            const row = button.closest('.content-table-groupby-row');
+            row.style.opacity = '0';
+            row.style.transform = 'translateX(20px)';
+            setTimeout(() => {
+                row.remove();
+            }, 200);
+        }
+
+        // Add transition for delete animation
+        document.querySelectorAll('.content-table-groupby-row').forEach(row => {
+            row.style.transition = 'all 0.2s ease';
+        });
+    </script>
+</body>
+</html>
